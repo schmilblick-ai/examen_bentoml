@@ -19,14 +19,15 @@ class Credentials(BaseModel):
 class InputModel(BaseModel): 
     model_config = ConfigDict(populate_by_name=True)
     # Misère on doit mettre des alias
-    GRE_Score: int = Field(alias='GRE Score')
-    TOEFL_Score: int = Field(alias='TOEFL Score')
-    University_Rating: int = Field(alias='University Rating')
-    SOP: float
-    LOR: float
-    CGPA: float
-    Research: int
-
+    GRE_Score:         float = Field(..., ge=260, le=340, alias="GRE Score")
+    TOEFL_Score:       float = Field(..., ge=0,   le=120, alias="TOEFL Score")
+    University_Rating: int   = Field(..., ge=1,   le=5,   alias="University Rating")
+    SOP:               float = Field(..., ge=1,   le=5)
+    LOR:               float = Field(..., ge=1,   le=5)
+    CGPA:              float = Field(..., ge=0,   le=10)
+    Research:          int   = Field(..., ge=0,   le=1)    
+    
+    
 # Ne pas hardcoder les secrets en production
 JWT_SECRET_KEY = "your_jwt_secret_key_here"
 JWT_ALGORITHM = "HS256"

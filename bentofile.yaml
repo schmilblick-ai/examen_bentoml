@@ -1,0 +1,19 @@
+service: "src.service:ModelProbaAdmission"
+description: "Ridge selected Model Service for predicting Admissions"
+labels:
+  owner: "Lio Rat"
+  project: "admissions_prediction"
+include:
+  - src/
+  - data/
+models:
+  - admission_ridge:latest
+python:
+  packages:
+    - numpy==1.26.4
+    - pandas==2.3.3
+    - scikit-learn==1.3.2
+    - bentoml==1.4.26
+    - pydantic==2.11.0
+    - requests==2.32.5
+    - pyjwt==2.10.1

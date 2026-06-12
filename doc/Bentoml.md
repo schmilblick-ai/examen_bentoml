@@ -1,5 +1,25 @@
 # A propos de ce projet Bentoml et selection universitaire
 
+
+## Instruction pour la validation
+
+``` bash
+# charger l'image docker
+unzip lionel.*.zip .
+docker load -i admission_prediction_service.tar
+
+# Lancer le service
+docker run --rm -p 3000:3000 model_proba_admission:ne5c233gbkv3ucxj
+
+# Lancer les 14 tests UNITAIRES disponibles
+pytest tests/test_admission_service_unit.py -v
+
+# NB ce sont des tests unitaires, je doit donc fournir src/service.py pour le fonctionement, il faut un .venv avec le requirements.txt
+# ce ne sont pas des tests d'intégration qui s'éffectue sur le containair up
+
+```
+
+------
 ## key learnings summary
 As starting point, this container is empty shell
 
@@ -48,8 +68,8 @@ pour une fonction de load plus générique, interactive
 
 ## Création du modèle - par Validation Croisé et Tuning
 - La sélection d'un algorithme de ML adapté à votre problème.
-- L'entraînement du modèle sur vos données de formation.
-- L'évaluation de la performance du modèle avec vos données de test.
+- L'entraînement du modèle sur nos données de formation.
+- L'évaluation de la performance du modèle avec nos données de test.
 
 
 ### le choix du modèle
@@ -58,21 +78,14 @@ et 7 variables explicatives
 
 https://www.kaggle.com/code/lavanyaanandm/predicting-admissions-chances#Data-Definition
 
-GRE Score: Graduate Record Exam (GRE) score. The score will be out of 340 points (numeric)
-
-TOEFL Score: Test of English as a Foreigner Language2 (TOEFL) score, which will be out of 120 points (numeric)
-
-University Rating: University Rating (Uni.Rating) that indicates the Bachelor University ranking among the other universities. The score will be out of 5 (numeric)
-
-SOP: Statement of purpose (SOP) which is a document written to show the candidate's life, ambitious and the motivations for the chosen degree/ university. The score will be out of 5 points (numeric)
-
-LOR: Letter of Recommendation Strength (LOR) which verifies the candidate professional experience, builds credibility, boosts confidence and ensures your competency. The score is out of 5 points (numeric)
-
-CGPA: Undergraduate GPA (CGPA) out of 10 (numeric) Cumulative Grade Point Average
-
-Research: Research Experience that can support the application, such as publishing research papers in conferences, working as research assistant with university professor (either yes or no) (categorical)
-
-Chance of Admit: One dependent variable can be predicted which is chance of admission, that is according to the input given will be ranging from 0 to 1 (numeric).
+- GRE Score: Graduate Record Exam (GRE) score. The score will be out of 340 points (numeric)
+- TOEFL Score: Test of English as a Foreigner Language2 (TOEFL) score, which will be out of 120 points (numeric)
+- University Rating: University Rating (Uni.Rating) that indicates the Bachelor University ranking among the other universities. The score will be out of 5 (numeric)
+- SOP: Statement of purpose (SOP) which is a document written to show the candidate's life, ambitious and the motivations for the chosen degree/ university. The score will be out of 5 points (numeric)
+- LOR: Letter of Recommendation Strength (LOR) which verifies the candidate professional experience, builds credibility, boosts confidence and ensures your competency. The score is out of 5 points (numeric)
+- CGPA: Undergraduate GPA (CGPA) out of 10 (numeric) Cumulative Grade Point Average
+- Research: Research Experience that can support the application, such as publishing research papers in conferences, working as research assistant with university professor (either yes or no) (categorical)
+- Chance of Admit: One dependent variable can be predicted which is chance of admission, that is according to the input given will be ranging from 0 to 1 (numeric).
 
 ```
  0   GRE Score          500 non-null    int64   
@@ -194,7 +207,7 @@ Si demain le dataset s'enrichit de nouvelles features potentiellement colinéair
 
 2. Le vrai plafond du problème
 
-Un R² de 0.826 signifie que vos 7 features expliquent 82.6% de la variance de la chance d'admission. Les 17.4% restants sont 
+Un R² de 0.826 signifie que nos 7 features expliquent 82.6% de la variance de la chance d'admission. Les 17.4% restants sont 
 probablement des facteurs non capturés : lettres de recommandation qualitatives, résultats d'entretien, profil de l'université d'origine... Aucun modèle ne peut dépasser ce plafond informationnel avec ces features.
 
 Ce qui confirme notre intuition de départ sur le dataset : on prédit une probabilité à partir d'autres probabilités, ce qui crée mécaniquement une relation quasi-linéaire  :  d'où la domination des modèles linéaires.
@@ -218,7 +231,95 @@ du_bento:
 J'ai noté qu'il devait être délicat de fournir la liste des variables pour un prédict, d'ou la mise en place de controle sur la liste des variables
 et l'évitement du passage des parametretres par array. le controle pydantic ne suffit pas si en dessous on passe les variables par array. Inversé des colonnes et si vite arrivé sur de longue liste.
 
+```bash
+uv run bentoml build
+INFO: Adding BentoML requirement to the image: bentoml==1.4.26.
+INFO: Locking PyPI package versions.
+
+██████╗ ███████╗███╗   ██╗████████╗ ██████╗ ███╗   ███╗██╗
+██╔══██╗██╔════╝████╗  ██║╚══██╔══╝██╔═══██╗████╗ ████║██║
+██████╔╝█████╗  ██╔██╗ ██║   ██║   ██║   ██║██╔████╔██║██║
+██╔══██╗██╔══╝  ██║╚██╗██║   ██║   ██║   ██║██║╚██╔╝██║██║
+██████╔╝███████╗██║ ╚████║   ██║   ╚██████╔╝██║ ╚═╝ ██║███████╗
+╚═════╝ ╚══════╝╚═╝  ╚═══╝   ╚═╝    ╚═════╝ ╚═╝     ╚═╝╚══════╝
+
+Successfully built Bento(tag="model_proba_admission:ne5c233gbkv3ucxj").
+```
+Next steps: 
+
+* Deploy to BentoCloud:
+    >`bentoml deploy model_proba_admission:ne5c233gbkv3ucxj -n ${DEPLOYMENT_NAME}`
+
+* Update an existing deployment on BentoCloud:
+    >`bentoml deployment update --bento model_proba_admission:ne5c233gbkv3ucxj ${DEPLOYMENT_NAME}`
+
+* Containerize your Bento with `bentoml containerize`:
+    >`bentoml containerize model_proba_admission:ne5c233gbkv3ucxj` 
+
+* Push to BentoCloud with `bentoml push`:
+    >`bentoml push model_proba_admission:ne5c233gbkv3ucxj` 
+
+
+
 - librairie de modèle préentrainés - historique, version
 - Accés par cache (Attention qui dit cache, dit speed *et* ressources)
 
 
+## Mise en place du docker container
+```bash
+vi bentofile.yaml
+uv run bentoml build
+docker buildx version
+bentoml containerize model_proba_admission:ne5c233gbkv3ucxj
+docker image list
+docker run --rm -p 3000:3000 model_proba_admission:ne5c233gbkv3ucxj
+```
+
+## test du swagger avec bearer token en place
+
+- on voit le swagger en place, mais avec un cadena ouvert
+![Swager et cadena](<pict/BentoMLswagger2026-06-12 052802.png>)
+
+- on va ouvrir le login, renseigner les creds et on va executer le endpoint login pour récupérer un JWT token
+![JWT](<pict/BentoMLswagger2026-06-12 053034.png>)
+
+- on copie ce token pour vérouiller le cadena (token valide une heure) et on le colle dans la zone correspondante
+![alt text](<pict/BentoMLswagger2026-06-12 053120.png>)
+
+- on ouvre la boite Available Authorize en cliquant sur Authorize avec le cadena ouvert et on colle la clé JWT puis on appuie sur le bouton Authorize
+![alt text](<pict/BentoMLswagger2026-06-12 053208.png>)
+
+- le bearer token a été distribué sur tout les endpoints - y compris predict, que nous pouvons utilisé directement, on click sur close ici, on pourra revenir ici faire un éventuel logout si besoin
+![alt text](<pict/BentoMLswagger2026-06-12 053316.png>)
+
+- on accéde au prédict sous cadena noir fermé maintenant et on va renseigner un input data pour un prédict sous JWT avec bearer token qui sera transmis à l'API pour le user connecté.
+![alt text](<pict/BentoMLswagger2026-06-12 053548.png>)
+
+Cet étudiant a de très bonne note et une grande chance d'être admis !!
+
+## Ouverture :
+
+A voir :: comment mettre en place https pour une authentification plus sécurisé - ou distribué le docker derrière un fastAPI
+sur un host, chaque model exposé doit avoir son numéro de port, si sur des dockers séparé.
+
+
+
+## Résultats des tests unitaires à controller
+```
+tests/test_admission_service_unit.py::TestJWTAuthentication::test_missing_token_fails PASSED                                                                         [  7%]
+tests/test_admission_service_unit.py::TestJWTAuthentication::test_invalid_token_format_fails PASSED                                                                  [ 14%]
+tests/test_admission_service_unit.py::TestJWTAuthentication::test_garbage_token_fails PASSED                                                                         [ 21%]
+tests/test_admission_service_unit.py::TestJWTAuthentication::test_invalid_signature_token_fails PASSED                                                               [ 28%]
+tests/test_admission_service_unit.py::TestJWTAuthentication::test_expired_token_fails PASSED                                                                         [ 35%]
+tests/test_admission_service_unit.py::TestJWTAuthentication::test_valid_token_succeeds PASSED                                                                        [ 42%]
+tests/test_admission_service_unit.py::TestLoginAPI::test_login_with_valid_credentials_returns_token PASSED                                                           [ 50%]
+tests/test_admission_service_unit.py::TestLoginAPI::test_login_with_invalid_credentials_returns_401 PASSED                                                           [ 57%]
+tests/test_admission_service_unit.py::TestLoginAPI::test_login_with_unknown_user_returns_401 PASSED                                                                  [ 64%]
+tests/test_admission_service_unit.py::TestLoginAPI::test_login_with_missing_fields_returns_error PASSED                                                              [ 71%]
+tests/test_admission_service_unit.py::TestPredictAPI::test_predict_without_token_returns_401 PASSED                                                                  [ 78%]
+tests/test_admission_service_unit.py::TestPredictAPI::test_predict_with_invalid_token_returns_401 PASSED                                                             [ 85%]
+tests/test_admission_service_unit.py::TestPredictAPI::test_predict_with_valid_data_returns_prediction PASSED                                                         [ 92%]
+tests/test_admission_service_unit.py::TestPredictAPI::test_predict_with_empty_body_returns_error PASSED                                                              [100%]
+... et des warnings
+===================================================================== 14 passed, 44 warnings in 3.76s
+```
