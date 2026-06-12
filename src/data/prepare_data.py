@@ -63,7 +63,7 @@ def process_data(input_filepath_admission, output_folderpath):
         df_caract["com"] = df_caract["com"].str.replace("2B", "202")
      
     if True:
-        df_admission.rename({"Chance of Admit " : "Chance_of_Admit"},  inplace = True, axis = 1)
+        df_admission.rename({"Chance of Admit " : "Chance_of_Admit", "LOR ":"LOR"},  inplace = True, axis = 1)
 
     if False:
         #--Converting columns types
